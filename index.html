@@ -1,1 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LSAT Study Plan 2025</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f5f0ff; font-family: 'Courier New', monospace; }
+    input, select, button { font-family: 'Courier New', monospace; }
+    input[type=checkbox] { cursor: pointer; }
+    ::-webkit-scrollbar { width: 6px; } 
+    ::-webkit-scrollbar-thumb { background: #c8b8e8; border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
 
+const PINK = "#e879a0", LAVENDER = "#c8b8e8", SOFT_PURPLE = "#9b8ec4", DARK = "#2a1f3d", BG = "#f5f0ff";
+
+const WEEKS = [
+  { week:1, dates:"May 29 – Jun 1", phase:1, theme:"LR: Foundations review + Entailment", note:"You already knocked out the conclusion work — start strong!", days:[
+    { day:"THU", label:"Lesson A", tasks:["KA: Getting started with LR (quick read)","KA: Identify the conclusion — quick guide + learn more (review)","Loophole Ch. 1: Translation & Cluster Sentences"] },
+    { day:"FRI", label:"Lesson B", tasks:["KA: Identify an entailment — quick guide + learn more","KA: Identify an entailment — video lesson","Loophole Ch. 2: The Stimulus Framework"] },
+    { day:"SAT", label:"RC Day", tasks:["KA: Getting started with Reading Comprehension (article)","KA: Catalog of question types — RC (article)","KA: Main point — quick guide","LSAT Trainer Ch. 22: Reasoning Structure"] },
+    { day:"SUN", label:"Drill", tasks:["KA: Identify the conclusion — drill 15 questions","KA: Identify an entailment — worked example + drill 10 questions","Write 1 sentence: how do you tell these two types apart?"] },
+    { day:"MON", label:"Review", tasks:["KA: Strongly supported inferences — quick guide + learn more","Review all Sunday wrong answers — understand WHY","Loophole Ch. 3: The Power Players (must/cannot/could)"] },
+  ]},
+  { week:2, dates:"Jun 5 – Jun 9", phase:1, theme:"LR: Inferences, Disputes, Technique", note:null, days:[
+    { day:"THU", label:"Lesson A", tasks:["KA: Strongly supported inferences — video lesson + worked example","KA: Disputes — quick guide + learn more","Loophole Ch. 4: Conditional Reasoning (start)"] },
+    { day:"FRI", label:"Lesson B", tasks:["KA: Disputes — video lesson + worked example","KA: Identify the technique — quick guide + learn more","Loophole Ch. 4: Conditional Reasoning (finish)"] },
+    { day:"SAT", label:"RC Day", tasks:["KA: Recognition — quick guide","KA: Clarifying meaning — quick guide","KA: Law passage overview: Cosmic Justice (paired)","LSAT Trainer Ch. 23: Reading Strategies"] },
+    { day:"SUN", label:"Drill", tasks:["Mixed drill: 10 strongly supported + 10 disputes on KA","KA: Identify the technique — video lesson + worked example","Log every error — what type? What difficulty?"] },
+    { day:"MON", label:"Review", tasks:["KA: Identify the role — quick guide + learn more","Review Sunday errors thoroughly","Loophole Ch. 5: Assumptions & The Loophole (preview)"] },
+  ]},
+  { week:3, dates:"Jun 12 – Jun 16", phase:1, theme:"LR: Role, Principle, Match Structure", note:null, days:[
+    { day:"THU", label:"Lesson A", tasks:["KA: Identify the role — video lesson + worked example","KA: Identify the principle — quick guide + learn more","Loophole Ch. 5: Assumptions & The Loophole (core chapter — go slow)"] },
+    { day:"FRI", label:"Lesson B", tasks:["KA: Identify the principle — video lesson + worked example","KA: Match structure — quick guide + learn more","Loophole Ch. 6: Causal Reasoning"] },
+    { day:"SAT", label:"RC Day", tasks:["KA: Main point | Law passage | Cosmic Justice","KA: Recognition | Law passage | Cosmic Justice","KA: Inferences about views | Law passage | Cosmic Justice","LSAT Trainer Ch. 24: Practice Set One"] },
+    { day:"SUN", label:"Drill", tasks:["KA: Match structure — video lesson + worked example","Mixed drill: Role + Principle + Technique questions","KA: Match principles — quick guide + learn more"] },
+    { day:"MON", label:"Review", tasks:["KA: Match principles — video lesson + worked example","Review all errors from the week","LSAT Trainer Ch. 25: Practice Set Two & Comparative Passages"] },
+  ]},
+  { week:4, dates:"Jun 19 – Jun 23", phase:2, theme:"⭐ HIGH PRIORITY: Flaws", note:"Your test data shows Flaws are weak at Level 3+. Spend extra time here.", priority:true, days:[
+    { day:"THU", label:"Lesson A", tasks:["KA: Identify a flaw — quick guide + learn more","KA: Identify a flaw — video lesson","Loophole Ch. 7: The Classic Flaws (all of them — take notes)"] },
+    { day:"FRI", label:"Lesson B", tasks:["KA: Identify a flaw — worked example","KA: Match a flaw — quick guide + learn more + video","LSAT Trainer Ch. 5: Flaws + Ch. 17: Flaw and Match the Flaw Questions"] },
+    { day:"SAT", label:"RC Day", tasks:["KA: Principles | Law passage | Cosmic Justice","KA: Analogies | Law passage | Cosmic Justice","KA: Law passage overview: Copyright","KA: Purpose of reference | Law passage | Copyright"] },
+    { day:"SUN", label:"Drill", tasks:["KA: Match a flaw — worked example","Drill 20 flaw questions on KA — no time pressure, understand each one","Write out each flaw type you missed and its definition"] },
+    { day:"MON", label:"Review", tasks:["LSAT Trainer Ch. 9: Flaw Review","Deep review of all flaw errors from Sunday","Make a personal flaw cheat sheet — your own words"] },
+  ]},
+  { week:5, dates:"Jun 26 – Jun 30", phase:2, theme:"⭐ HIGHEST PRIORITY: Necessary Assumptions", note:"From your test: Assumptions were your most missed category across BOTH LR sections. Take this week slowly.", priority:true, days:[
+    { day:"THU", label:"Lesson A", tasks:["KA: Necessary assumptions — quick guide + learn more","Loophole Ch. 5 re-read: The Necessary Assumption section specifically","LSAT Trainer Ch. 19: Required Assumption, Strengthen, and Weaken (intro)"] },
+    { day:"FRI", label:"Lesson B", tasks:["KA: Necessary assumptions — video lesson","KA: Necessary assumptions — worked example","Loophole: Sufficient & Necessary Assumption Drill (untimed first)"] },
+    { day:"SAT", label:"RC Day", tasks:["KA: Main point | Law passage | Copyright","KA: Applying to new contexts | Law passage | Copyright","KA: Humanities passage overview: Music (paired passages)","LSAT Trainer Ch. 22: Reasoning Structure (re-read for RC)"] },
+    { day:"SUN", label:"Drill", tasks:["Drill 20 necessary assumption questions on KA — untimed","For each wrong answer: what made you pick the wrong one? Write it down.","Do the Loophole drill again timed this time"] },
+    { day:"MON", label:"Review", tasks:["LSAT Trainer Ch. 19: finish chapter","Deep review of all assumption errors","r/LSAT: search 'necessary assumption tips' — read 2-3 threads"] },
+  ]},
+  { week:6, dates:"Jul 3 – Jul 7", phase:2, theme:"⭐ HIGH PRIORITY: Sufficient Assumptions", note:"Learn these alongside Necessary — always compare them directly. They're mirror concepts.", priority:true, days:[
+    { day:"THU", label:"Lesson A", tasks:["KA: Sufficient assumptions — quick guide + learn more","Loophole Ch. 5: The Sufficient Assumption section","LSAT Trainer Ch. 18: Sufficient Assumption and Supporting Principle"] },
+    { day:"FRI", label:"Lesson B", tasks:["KA: Sufficient assumptions — video lesson + worked example","Loophole Ch. 9: Powerful Questions — Sufficient Assumption section","Make a side-by-side comparison: Necessary vs Sufficient (your words)"] },
+    { day:"SAT", label:"RC Day", tasks:["KA: Main point 1 + 2 | Humanities passage | Music","KA: Recognition | Humanities passage | Music","KA: Inferences about views | Humanities passage | Music"] },
+    { day:"SUN", label:"Drill", tasks:["Mixed drill: 15 necessary + 15 sufficient assumptions on KA","Track separately: how many of each did you miss?","Note: which type is harder for you right now?"] },
+    { day:"MON", label:"Review", tasks:["Deep review of Sunday errors","Re-read your necessary vs sufficient comparison notes","LSAT Trainer Ch. 20: Review and Assess"] },
+  ]},
+  { week:7, dates:"Jul 10 – Jul 14", phase:2, theme:"⭐ HIGH PRIORITY: Strengthen & Weaken", note:"Your test data shows these at Level 3-4 were weak. These plus assumptions are the biggest score opportunities.", priority:true, days:[
+    { day:"THU", label:"Lesson A", tasks:["KA: Strengthen and weaken — quick guide + learn more","Loophole Ch. 9: Powerful Questions — Weaken + Strengthen sections","LSAT Trainer Ch. 19: Strengthen and Weaken (finish)"] },
+    { day:"FRI", label:"Lesson B", tasks:["KA: Strengthen — video lesson + worked example","KA: Weaken — video lesson + worked example","Loophole Ch. 6: Causal Reasoning (re-read)"] },
+    { day:"SAT", label:"RC Day", tasks:["KA: Principles and analogies | Humanities passage | Music","KA: Additional evidence | Humanities passage | Music","KA: Primary purpose | Humanities passage | Music"] },
+    { day:"SUN", label:"Drill", tasks:["Drill 20 strengthen + 20 weaken questions on KA","Focus on causal argument questions — these are where most people lose points","Log every error with reason why"] },
+    { day:"MON", label:"Review", tasks:["LSAT Trainer Ch. 30: Reasoning Structure Questions","Deep review of strengthen/weaken errors","Identify: do you miss more strengthen or more weaken?"] },
+  ]},
+  { week:8, dates:"Jul 17 – Jul 21", phase:2, theme:"LR: Helpful to Know, Explain, Resolve + First Timed LR Section", note:null, days:[
+    { day:"THU", label:"Lesson A", tasks:["KA: Helpful to know — quick guide + learn more + video + worked example","Loophole Ch. 9: Helpful to Know / Evaluate section"] },
+    { day:"FRI", label:"Lesson B", tasks:["KA: Explain — quick guide + learn more + video + worked example","KA: Resolve a conflict — quick guide + learn more + video + worked example","Loophole Ch. 9: Resolution section"] },
+    { day:"SAT", label:"RC Day", tasks:["KA: Science passage overview: The Sun","KA: Recognition 1 + 2 | Science passage | The Sun","KA: Organizing info | Science passage | The Sun","LSAT Trainer Ch. 35: Question Strategies"] },
+    { day:"SUN", label:"First Timed LR Section!", tasks:["Take a full timed LR section on KA (35 minutes, no pausing)","This is your new real baseline — score it immediately","Deep review of every missed question same day"] },
+    { day:"MON", label:"Review", tasks:["Analyze your timed section: which types did you miss?","LSAT Trainer Ch. 31: LSAT Vocabulary","Update your priority list based on what you got wrong"] },
+  ]},
+  { week:9, dates:"Jul 24 – Jul 28", phase:3, theme:"RC Deep Dive: Inferences + More Passages", note:"Keep doing 15 mixed LR questions every Sunday to maintain your LR skills.", days:[
+    { day:"THU", label:"Lesson A", tasks:["KA: Inferences about views — quick guide","KA: Inferences about information — quick guide","KA: Inferences about attitudes — quick guide","LSAT Trainer Ch. 23: Reading Strategies (re-read)"] },
+    { day:"FRI", label:"Lesson B", tasks:["KA: Inferences about views 1+2+3 | Science passage | The Sun","KA: Inferences about info | Science passage | The Sun","KA: Applying to new contexts — quick guide","KA: Principles and analogies — quick guide"] },
+    { day:"SAT", label:"RC Day", tasks:["KA: Social science passage overview: Wool","KA: Main point | Social science passage | Wool","KA: Recognition 1 + 2 | Social science passage | Wool"] },
+    { day:"SUN", label:"Drill", tasks:["LR maintenance: 15 mixed questions","KA: Inferences about info + attitudes | Social science passage | Wool","KA: Additional evidence — quick guide + Primary purpose — quick guide"] },
+    { day:"MON", label:"Review", tasks:["LSAT Trainer Ch. 36: More Practice and Comparative Passage Question Strategies","Review all RC errors from the week","What RC question type is hardest for you?"] },
+  ]},
+  { week:10, dates:"Jul 31 – Aug 3", phase:3, theme:"RC: Full Timed Section + First Complete Practice Test", note:"Last week of full summer freedom. Make this one count.", days:[
+    { day:"THU", label:"Lesson A", tasks:["KA: Purpose of reference — quick guide","KA: Organizing information — quick guide","LSAT Trainer Ch. 37: Reading Comprehension Review"] },
+    { day:"FRI", label:"Lesson B", tasks:["LSAT Trainer Ch. 38: Reading Comprehension Sample Section (untimed first)","Review every question — understand the reasoning"] },
+    { day:"SAT", label:"RC Timed!", tasks:["Take a full timed RC section on KA (35 minutes, no pausing)","Score it immediately — log your score in the tracker"] },
+    { day:"SUN", label:"First Full Test!", tasks:["Take a complete timed practice test: LR + LR + RC (105 min total)","Real conditions: sit at a desk, no phone, time each section","Score and log it immediately"] },
+    { day:"MON", label:"Deep Review", tasks:["Spend ALL of Monday reviewing Sunday's test errors","Categorize errors: LR type? RC type? What difficulty level?","This review is more valuable than any lesson"] },
+  ]},
+  { week:11, dates:"Aug 7 – Aug 11", phase:4, theme:"Test Mode: Targeted Drilling", note:"School is back but you've built the foundation. Now it's about drilling weak spots.", days:[
+    { day:"THU", label:"Drill", tasks:["30 min: Targeted drill on your #1 weakest LR type","Quality over quantity — understand every wrong answer"] },
+    { day:"FRI", label:"Drill", tasks:["30 min: Targeted drill on your #2 weakest LR type","Keep a wrong answer journal — pattern recognition matters"] },
+    { day:"SAT", label:"Full Test", tasks:["Full timed practice test — real conditions","Log your score in the tracker"] },
+    { day:"SUN", label:"Review", tasks:["Full Sunday review of Saturday's test","LR maintenance: 15 mixed questions if you have energy left"] },
+    { day:"MON", label:"Light Review", tasks:["30 min: Review your wrong answer journal from the week","Note any patterns you keep seeing in your errors"] },
+  ]},
+  { week:12, dates:"Aug 14 – Aug 18", phase:4, theme:"Test Mode: Building Momentum", note:null, days:[
+    { day:"THU", label:"Drill", tasks:["30 min targeted drill — weakest remaining LR type","LSAT Trainer Ch. 40: Logical Reasoning Review"] },
+    { day:"FRI", label:"Drill", tasks:["30 min: Mixed RC drilling — your weakest RC question type","LSAT Trainer Ch. 34: Logical Reasoning Strategy Review"] },
+    { day:"SAT", label:"Full Test", tasks:["Full timed practice test","Log score — compare to previous tests"] },
+    { day:"SUN", label:"Review", tasks:["Full review of Saturday's test","Are you seeing improvement? Note what's still tricky."] },
+    { day:"MON", label:"Review", tasks:["30 min: Error log review","No new material after this week"] },
+  ]},
+  { week:13, dates:"Aug 21 – Aug 25", phase:4, theme:"Final Push — No New Material", note:"Trust your preparation. No new concepts. Reinforce what you know.", days:[
+    { day:"THU", label:"Light Drill", tasks:["30 min: One LR section — your strongest type first, then weakest","Keep confidence high"] },
+    { day:"FRI", label:"Light Drill", tasks:["30 min: One timed RC passage + all questions","Review immediately after"] },
+    { day:"SAT", label:"Final Full Test", tasks:["Last full timed practice test","Treat it like the real thing — same breakfast, same setup"] },
+    { day:"SUN", label:"Rest", tasks:["Seriously — rest. Brain recovery is prep.","Light walk, good food, sleep early"] },
+    { day:"MON", label:"Logistics Only", tasks:["Review test location, timing, check-in requirements","Pack your bag: ID, snacks, water","Set two alarms. You've got this."] },
+  ]},
+];
+
+const PHASE_COLORS = {
+  1:{ bg:"#e8f4e8", border:"#7cb87c", label:"Phase 1: LR Foundations", color:"#2d6b2d" },
+  2:{ bg:"#fce8f0", border:PINK,      label:"Phase 2: LR Advanced",    color:"#8c1a4a" },
+  3:{ bg:"#e8eaf8", border:SOFT_PURPLE,label:"Phase 3: Reading Comp",  color:"#3a2d7a" },
+  4:{ bg:"#fff3e0", border:"#e0a030", label:"Phase 4: Test Mode",      color:"#7a4a00" },
+};
+const DAY_COLORS = { THU:"#c8b8e8", FRI:"#f4b8d4", SAT:"#b8d8f4", SUN:"#f4d8b8", MON:"#b8f4d8" };
+const LR_TYPES = ["Mixed","Necessary Assumption","Sufficient Assumption","Strengthen","Weaken","Flaw","Match a Flaw","Resolve/Explain","Inference/Strongly Supported","Identify the Conclusion","Identify the Role","Identify the Technique","Match Structure","Match Principles","Principle","Helpful to Know","Dispute"];
+const RC_TYPES = ["Mixed","Main Point","Recognition","Inference — Views","Inference — Info","Inference — Attitudes","Purpose of Reference","Applying to New Contexts","Principles & Analogies","Additional Evidence","Organizing Info","Primary Purpose","Clarifying Meaning"];
+const EMPTY_DRILL = { section:"Logical Reasoning", questionType:"", correct:"", total:"", time:"", difficulty:"Mixed", notes:"", date:"" };
+
+const load = (k, fb) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } };
+const save = (k, v)  => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+function App() {
+  const [selWeek,    setSelWeek]    = useState(0);
+  const [checked,   setChecked]    = useState(() => load("lsat-checked", {}));
+  const [scores,    setScores]     = useState(() => load("lsat-scores",  []));
+  const [drills,    setDrills]     = useState(() => load("lsat-drills",  []));
+  const [scoreIn,   setScoreIn]    = useState("");
+  const [dateIn,    setDateIn]     = useState("");
+  const [drillForm, setDrillForm]  = useState({...EMPTY_DRILL});
+  const [view,      setView]       = useState("plan");
+
+  useEffect(() => { save("lsat-checked", checked); }, [checked]);
+  useEffect(() => { save("lsat-scores",  scores);  }, [scores]);
+  useEffect(() => { save("lsat-drills",  drills);  }, [drills]);
+
+  const toggleCheck = id => setChecked(p => ({...p, [id]: !p[id]}));
+
+  const addScore = () => {
+    const s = parseInt(scoreIn);
+    if (!s || s < 120 || s > 180) return;
+    setScores(p => [...p, { score:s, date: dateIn || new Date().toLocaleDateString() }]);
+    setScoreIn(""); setDateIn("");
+  };
+
+  const setDF = (k, v) => setDrillForm(f => ({...f, [k]: v}));
+
+  const addDrill = () => {
+    const total = parseInt(drillForm.total), correct = parseInt(drillForm.correct);
+    if (!total || total < 1) return;
+    const pct = isNaN(correct) ? null : Math.round(correct / total * 100);
+    setDrills(p => [{ ...drillForm, correct: isNaN(correct)?0:correct, total, pct, date: drillForm.date || new Date().toLocaleDateString() }, ...p]);
+    setDrillForm({...EMPTY_DRILL, section: drillForm.section});
+  };
+
+  const avgPct = arr => { const v = arr.filter(d => d.pct!==null); return v.length ? Math.round(v.reduce((a,d)=>a+d.pct,0)/v.length) : null; };
+
+  const allTasks = WEEKS.flatMap((w,wi) => w.days.flatMap((d,di) => d.tasks.map((_,ti)=>`${wi}-${di}-${ti}`)));
+  const doneTasks = allTasks.filter(id => checked[id]).length;
+  const pct = allTasks.length ? Math.round(doneTasks/allTasks.length*100) : 0;
+  const week = WEEKS[selWeek], phase = PHASE_COLORS[week.phase];
+  const inp = { border:`1px solid ${LAVENDER}`, padding:"6px 8px", fontSize:"12px", boxSizing:"border-box", width:"100%" };
+
+  return (
+    <div style={{ background:BG, minHeight:"100vh", paddingBottom:"2rem" }}>
+
+      {/* Header */}
+      <div style={{ background:DARK, padding:"1rem 1.25rem", borderBottom:`3px solid ${PINK}` }}>
+        <div style={{ display:"flex", alignItems:"center", gap:"12px", flexWrap:"wrap" }}>
+          <div style={{ background:PINK, color:"white", padding:"4px 12px", fontSize:"11px", fontWeight:"bold", letterSpacing:"0.1em" }}>LSAT PREP</div>
+          <span style={{ color:"white", fontSize:"15px", fontWeight:"bold" }}>Summer Study Plan 2025</span>
+          <span style={{ color:LAVENDER, fontSize:"12px", marginLeft:"auto" }}>May 29 → Sep/Oct Test</span>
+        </div>
+        <div style={{ marginTop:"10px", background:"#3d2f5a", borderRadius:"4px", height:"8px" }}>
+          <div style={{ background:PINK, width:pct+"%", height:"8px", borderRadius:"4px", transition:"width 0.4s" }} />
+        </div>
+        <div style={{ color:LAVENDER, fontSize:"11px", marginTop:"4px" }}>{doneTasks}/{allTasks.length} tasks · {pct}% complete · saved locally 💾</div>
+      </div>
+
+      {/* Nav */}
+      <div style={{ background:"#e8e0f8", borderBottom:`2px solid ${LAVENDER}`, padding:"8px 1.25rem", display:"flex", gap:"8px", flexWrap:"wrap" }}>
+        {[["plan","📅 Plan"],["drills","🎯 Drills"],["scores","📊 Tests"],["progress","✅ Progress"]].map(([v,lbl]) => (
+          <button key={v} onClick={()=>setView(v)}
+            style={{ background:view===v?PINK:"white", color:view===v?"white":DARK, border:`1px solid ${LAVENDER}`, padding:"4px 14px", fontSize:"12px", cursor:"pointer" }}>
+            {lbl}
+          </button>
+        ))}
+      </div>
+
+      {/* PLAN */}
+      {view==="plan" && (
+        <div style={{ padding:"1rem 1.25rem" }}>
+          <div style={{ background:"#fff0f5", border:`1px solid ${PINK}`, borderRadius:"6px", padding:"10px 14px", marginBottom:"1rem", fontSize:"12px" }}>
+            <strong style={{ color:"#8c1a4a" }}>⭐ Weak spots from PrepTest 158:</strong>
+            <span style={{ color:DARK }}> Assumptions (most missed) · Strengthen/Weaken (L3+) · Techniques/Roles/Principles (L3+) · Flaws (L3+)</span>
+          </div>
+          <div style={{ background:"#f0fff4", border:"1px solid #7cb87c", borderRadius:"6px", padding:"10px 14px", marginBottom:"1rem", fontSize:"12px" }}>
+            <strong style={{ color:"#2d6b2d" }}>✓ Already completed:</strong>
+            <span style={{ color:"#2d5a2d" }}> Introduction to arguments · Catalog of question types · Types of conclusions · Types of evidence · Identify the conclusion (video + worked example)</span>
+          </div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", marginBottom:"1rem" }}>
+            {WEEKS.map((w,i) => {
+              const ph = PHASE_COLORS[w.phase], active = i===selWeek;
+              return <button key={i} onClick={()=>setSelWeek(i)}
+                style={{ background:active?ph.border:"white", color:active?"white":ph.color, border:`1px solid ${ph.border}`, padding:"4px 10px", fontSize:"11px", cursor:"pointer", fontWeight:active?"bold":"normal" }}>
+                Wk {w.week}{w.priority?" ⭐":""}
+              </button>;
+            })}
+          </div>
+          <div style={{ background:phase.bg, border:`2px solid ${phase.border}`, borderRadius:"8px", padding:"1rem 1.25rem" }}>
+            <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexWrap:"wrap", gap:"8px", marginBottom:"10px" }}>
+              <div>
+                <div style={{ fontSize:"11px", color:phase.color, fontWeight:"bold", letterSpacing:"0.08em" }}>{phase.label} · WEEK {week.week}</div>
+                <div style={{ fontSize:"15px", fontWeight:"bold", color:DARK, marginTop:"2px" }}>{week.theme}</div>
+                <div style={{ fontSize:"12px", color:"#555", marginTop:"1px" }}>{week.dates}</div>
+              </div>
+              {week.note && <div style={{ background:"white", border:`1px solid ${phase.border}`, borderRadius:"4px", padding:"6px 10px", fontSize:"11px", color:phase.color, maxWidth:"240px" }}>{week.note}</div>}
+            </div>
+            {week.days.map((d,di) => {
+              const dayDone = d.tasks.filter((_,ti)=>checked[`${selWeek}-${di}-${ti}`]).length;
+              return <div key={di} style={{ marginBottom:"10px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"4px" }}>
+                  <span style={{ background:DAY_COLORS[d.day], color:DARK, padding:"2px 8px", fontSize:"11px", fontWeight:"bold" }}>{d.day}</span>
+                  <span style={{ fontSize:"12px", color:"#666" }}>{d.label}</span>
+                  <span style={{ fontSize:"11px", color:dayDone===d.tasks.length?"#2d6b2d":"#888", marginLeft:"auto" }}>{dayDone}/{d.tasks.length}</span>
+                </div>
+                {d.tasks.map((task,ti) => {
+                  const id=`${selWeek}-${di}-${ti}`, done=!!checked[id];
+                  return <label key={ti} onClick={()=>toggleCheck(id)}
+                    style={{ display:"flex", gap:"8px", alignItems:"flex-start", padding:"5px 8px", cursor:"pointer", background:done?"#e8f4e8":"white", border:"1px solid "+(done?"#7cb87c":"#ddd"), borderRadius:"4px", marginBottom:"4px" }}>
+                    <input type="checkbox" checked={done} onChange={()=>{}} style={{ marginTop:"2px", flexShrink:0 }} />
+                    <span style={{ fontSize:"12px", color:done?"#555":DARK, textDecoration:done?"line-through":"none", lineHeight:"1.5" }}>{task}</span>
+                  </label>;
+                })}
+              </div>;
+            })}
+          </div>
+          <div style={{ display:"flex", gap:"10px", marginTop:"1rem" }}>
+            <button onClick={()=>setSelWeek(Math.max(0,selWeek-1))} disabled={selWeek===0}
+              style={{ flex:1, padding:"8px", background:"white", border:`1px solid ${LAVENDER}`, cursor:selWeek===0?"not-allowed":"pointer", color:selWeek===0?"#aaa":DARK }}>← Previous week</button>
+            <button onClick={()=>setSelWeek(Math.min(WEEKS.length-1,selWeek+1))} disabled={selWeek===WEEKS.length-1}
+              style={{ flex:1, padding:"8px", background:PINK, border:"none", color:"white", cursor:selWeek===WEEKS.length-1?"not-allowed":"pointer", fontWeight:"bold" }}>Next week →</button>
+          </div>
+        </div>
+      )}
+
+      {/* DRILLS */}
+      {view==="drills" && (
+        <div style={{ padding:"1rem 1.25rem" }}>
+          <div style={{ display:"flex", gap:"8px", marginBottom:"1rem" }}>
+            {["Logical Reasoning","Reading Comprehension"].map(sec => (
+              <button key={sec} onClick={()=>setDrillForm(f=>({...f,section:sec,questionType:""}))}
+                style={{ flex:1, padding:"6px", background:drillForm.section===sec?SOFT_PURPLE:"white", color:drillForm.section===sec?"white":DARK, border:`1px solid ${LAVENDER}`, fontSize:"12px", cursor:"pointer", fontWeight:drillForm.section===sec?"bold":"normal" }}>
+                {sec==="Logical Reasoning"?"⚖️ Logical Reasoning":"📖 Reading Comprehension"}
+              </button>
+            ))}
+          </div>
+          <div style={{ background:"white", border:`1px solid ${LAVENDER}`, borderRadius:"6px", padding:"1rem", marginBottom:"1rem" }}>
+            <div style={{ fontSize:"13px", fontWeight:"bold", color:DARK, marginBottom:"10px" }}>Log a drill session</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
+              <div style={{ gridColumn:"1 / -1" }}>
+                <label style={{ fontSize:"11px", color:"#888", display:"block", marginBottom:"3px" }}>Question type</label>
+                <select value={drillForm.questionType} onChange={e=>setDF("questionType",e.target.value)} style={inp}>
+                  <option value="">— select type —</option>
+                  {(drillForm.section==="Logical Reasoning"?LR_TYPES:RC_TYPES).map(t=><option key={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize:"11px", color:"#888", display:"block", marginBottom:"3px" }}>Correct</label>
+                <input type="number" min="0" placeholder="e.g. 18" value={drillForm.correct} onChange={e=>setDF("correct",e.target.value)} style={inp} />
+              </div>
+              <div>
+                <label style={{ fontSize:"11px", color:"#888", display:"block", marginBottom:"3px" }}>Total Qs</label>
+                <input type="number" min="1" placeholder="e.g. 25" value={drillForm.total} onChange={e=>setDF("total",e.target.value)} style={inp} />
+              </div>
+              <div>
+                <label style={{ fontSize:"11px", color:"#888", display:"block", marginBottom:"3px" }}>Time (min)</label>
+                <input type="number" min="1" placeholder="e.g. 20" value={drillForm.time} onChange={e=>setDF("time",e.target.value)} style={inp} />
+              </div>
+              <div>
+                <label style={{ fontSize:"11px", color:"#888", display:"block", marginBottom:"3px" }}>Difficulty</label>
+                <select value={drillForm.difficulty} onChange={e=>setDF("difficulty",e.target.value)} style={inp}>
+                  {["Mixed","Level 1-2","Level 3","Level 4-5"].map(d=><option key={d}>{d}</option>)}
+                </select>
+              </div>
+              <div style={{ gridColumn:"1 / -1" }}>
+                <label style={{ fontSize:"11px", color:"#888", display:"block", marginBottom:"3px" }}>Notes (optional)</label>
+                <input type="text" placeholder="e.g. struggled with causal questions" value={drillForm.notes} onChange={e=>setDF("notes",e.target.value)} style={inp} />
+              </div>
+              <div>
+                <label style={{ fontSize:"11px", color:"#888", display:"block", marginBottom:"3px" }}>Date</label>
+                <input type="date" value={drillForm.date} onChange={e=>setDF("date",e.target.value)} style={inp} />
+              </div>
+              <div style={{ display:"flex", alignItems:"flex-end" }}>
+                <button onClick={addDrill} style={{ width:"100%", background:PINK, color:"white", border:"none", padding:"7px", fontWeight:"bold", fontSize:"13px", cursor:"pointer" }}>Log ↗</button>
+              </div>
+            </div>
+          </div>
+          {(() => {
+            const sd = drills.filter(d=>d.section===drillForm.section);
+            if (!sd.length) return null;
+            const byType = {};
+            sd.forEach(d=>{ const k=d.questionType||"Unspecified"; if(!byType[k]) byType[k]=[]; byType[k].push(d); });
+            return <div style={{ background:"#f8f4ff", border:`1px solid ${LAVENDER}`, borderRadius:"6px", padding:"10px 12px", marginBottom:"1rem" }}>
+              <div style={{ fontSize:"12px", fontWeight:"bold", color:DARK, marginBottom:"8px" }}>📈 {drillForm.section} — by question type</div>
+              {Object.entries(byType).map(([type,entries]) => {
+                const avg=avgPct(entries), col=avg===null?"#888":avg>=80?"#2d6b2d":avg>=65?"#7a4a00":"#8c1a4a";
+                return <div key={type} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"4px 0", borderBottom:"1px solid #e0d8f0" }}>
+                  <span style={{ fontSize:"11px", color:DARK }}>{type}</span>
+                  <div style={{ display:"flex", gap:"12px", alignItems:"center" }}>
+                    <span style={{ fontSize:"10px", color:"#888" }}>{entries.length} drill{entries.length>1?"s":""}</span>
+                    <span style={{ fontSize:"12px", fontWeight:"bold", color:col, minWidth:"36px", textAlign:"right" }}>{avg!==null?avg+"%":"—"}</span>
+                  </div>
+                </div>;
+              })}
+            </div>;
+          })()}
+          <div style={{ fontSize:"12px", fontWeight:"bold", color:DARK, marginBottom:"8px" }}>Recent — {drillForm.section}</div>
+          {drills.filter(d=>d.section===drillForm.section).length===0
+            ? <div style={{ color:"#888", fontSize:"13px", textAlign:"center", padding:"2rem" }}>No {drillForm.section} drills logged yet.</div>
+            : drills.filter(d=>d.section===drillForm.section).map((d,i) => {
+              const col=d.pct===null?"#888":d.pct>=80?"#2d6b2d":d.pct>=65?"#7a4a00":"#8c1a4a";
+              return <div key={i} style={{ background:"white", border:`1px solid ${LAVENDER}`, borderRadius:"4px", padding:"10px 12px", marginBottom:"6px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                  <div>
+                    <div style={{ fontSize:"12px", fontWeight:"bold", color:DARK }}>{d.questionType||"Mixed"}</div>
+                    <div style={{ fontSize:"11px", color:"#888", marginTop:"2px" }}>{d.date}{d.time?` · ${d.time} min`:""}{d.difficulty?` · ${d.difficulty}`:""}</div>
+                    {d.notes?<div style={{ fontSize:"11px", color:SOFT_PURPLE, marginTop:"4px", fontStyle:"italic" }}>"{d.notes}"</div>:null}
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontSize:"20px", fontWeight:"bold", color:col }}>{d.pct!==null?d.pct+"%":"—"}</div>
+                    <div style={{ fontSize:"11px", color:"#888" }}>{d.correct}/{d.total}</div>
+                  </div>
+                </div>
+              </div>;
+            })
+          }
+        </div>
+      )}
+
+      {/* SCORES */}
+      {view==="scores" && (
+        <div style={{ padding:"1rem 1.25rem" }}>
+          <div style={{ background:"#fff0f5", border:`1px solid ${PINK}`, borderRadius:"6px", padding:"10px 14px", marginBottom:"1rem", fontSize:"12px", color:"#8c1a4a" }}>
+            <strong>Baseline:</strong> PrepTest 158 = <strong>146</strong> (untimed, sleep-deprived). Goal: <strong>172</strong> 🎯
+          </div>
+          <div style={{ background:"white", border:`1px solid ${LAVENDER}`, borderRadius:"6px", padding:"1rem", marginBottom:"1rem" }}>
+            <div style={{ fontSize:"13px", fontWeight:"bold", color:DARK, marginBottom:"10px" }}>Log a practice test score</div>
+            <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
+              <input type="number" min="120" max="180" placeholder="Score (120–180)" value={scoreIn} onChange={e=>setScoreIn(e.target.value)}
+                style={{ border:`1px solid ${LAVENDER}`, padding:"6px 10px", fontSize:"12px", width:"140px" }} />
+              <input type="date" value={dateIn} onChange={e=>setDateIn(e.target.value)}
+                style={{ border:`1px solid ${LAVENDER}`, padding:"6px 10px", fontSize:"12px" }} />
+              <button onClick={addScore} style={{ background:PINK, color:"white", border:"none", padding:"6px 16px", fontWeight:"bold", cursor:"pointer" }}>Add ↗</button>
+            </div>
+          </div>
+          {scores.length===0
+            ? <div style={{ color:"#888", fontSize:"13px", textAlign:"center", padding:"2rem" }}>No scores yet. First full timed test is Week 8!</div>
+            : <div>
+                {scores.map((s,i) => (
+                  <div key={i} style={{ background:"white", border:`1px solid ${LAVENDER}`, borderRadius:"4px", padding:"10px 14px", marginBottom:"8px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <div>
+                      <div style={{ fontSize:"11px", color:"#888" }}>Practice test {i+1} · {s.date}</div>
+                      <div style={{ fontSize:"22px", fontWeight:"bold", color:s.score>=160?"#2d6b2d":s.score>=155?"#7a4a00":PINK }}>{s.score}</div>
+                    </div>
+                    {i>0 && <div style={{ fontSize:"13px", fontWeight:"bold", color:s.score>scores[i-1].score?"#2d6b2d":PINK }}>
+                      {s.score>scores[i-1].score?"+":""}{s.score-scores[i-1].score} pts
+                    </div>}
+                  </div>
+                ))}
+                {scores.length>1 && <div style={{ background:DARK, color:"white", padding:"10px 14px", borderRadius:"4px", fontSize:"13px" }}>
+                  Total growth: <strong style={{ color:PINK }}>{scores[scores.length-1].score-scores[0].score>0?"+":""}{scores[scores.length-1].score-scores[0].score} points</strong> from first to last test
+                </div>}
+              </div>
+          }
+        </div>
+      )}
+
+      {/* PROGRESS */}
+      {view==="progress" && (
+        <div style={{ padding:"1rem 1.25rem" }}>
+          {WEEKS.map((w,wi) => {
+            const wTasks = w.days.flatMap((d,di)=>d.tasks.map((_,ti)=>`${wi}-${di}-${ti}`));
+            const wDone  = wTasks.filter(id=>checked[id]).length;
+            const wPct   = wTasks.length ? Math.round(wDone/wTasks.length*100) : 0;
+            const ph     = PHASE_COLORS[w.phase];
+            return <div key={wi} onClick={()=>{ setSelWeek(wi); setView("plan"); }}
+              style={{ background:"white", border:`1px solid ${wPct===100?"#7cb87c":LAVENDER}`, borderRadius:"4px", padding:"8px 12px", marginBottom:"6px", cursor:"pointer", display:"flex", alignItems:"center", gap:"12px" }}>
+              <span style={{ background:ph.border, color:"white", padding:"2px 6px", fontSize:"10px", fontWeight:"bold", minWidth:"32px", textAlign:"center" }}>W{w.week}</span>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:"11px", color:DARK, lineHeight:"1.4" }}>{w.theme}</div>
+                <div style={{ background:"#eee", borderRadius:"2px", height:"4px", marginTop:"4px" }}>
+                  <div style={{ background:wPct===100?"#7cb87c":ph.border, width:wPct+"%", height:"4px", borderRadius:"2px" }} />
+                </div>
+              </div>
+              <span style={{ fontSize:"11px", color:"#888", whiteSpace:"nowrap" }}>{wDone}/{wTasks.length}</span>
+            </div>;
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
